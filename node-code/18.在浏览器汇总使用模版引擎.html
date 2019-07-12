@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- 引用template-web.js -->
+    <script src="node_modules/art-template/lib/template-web.js"></script>
+    <script id="tpl" type="text/template">
+      hello{{name}}123
+      我喜欢:{{ each hobbies }} {{ $value }} {{ /each }}
+    </script>
+    <script>
+      var ret = template('tpl', {
+        name: 'jack',
+        hobbies: ['写代码', '看书']
+      });
+      console.log(ret);
+    </script>
+  </body>
+</html>
