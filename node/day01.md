@@ -190,7 +190,7 @@ var http=require('http')
 
 ### 第三方模块
 
-### web服务开发
+## web服务开发
 
 #### ip地址和端口号
 
@@ -206,19 +206,259 @@ var http=require('http')
 
 ## Node中的模块系统
 
- * 在 Node 中没有全局作用域的概念
-    * 在 Node 中，只能通过 require 方法来加载执行多个 JavaScript 脚本文件
-    * require 加载只能是执行其中的代码，文件与文件之间由于是模块作用域，所以不会有污染的问题
-      - 模块完全是封闭的
-      - 外部无法访问内部
-      - 内部也无法访问外部
-    * 模块作用域固然带来了一些好处，可以加载执行多个文件，可以完全避免变量命名冲突污染的问题
-    * 但是某些情况下，模块与模块是需要进行通信的
-    * 在每个模块中，都提供了一个对象：`exports`
-    * 该对象默认是一个空对象
-    * 你要做的就是把需要被外部访问使用的成员手动的挂载到 `exports` 接口对象中
-    * 然后谁来 `require` 这个模块，谁就可以得到模块内部的 `exports` 接口对象
-    * 还有其它的一些规则，具体后面讲，以及如何在项目中去使用这种编程方式，会通过后面的案例来处理
+- Ecmascript语言
+- 核心模块
+  - 文件操作fs
+  - http服务的http
+  - url路径操作模块
+  - path路径处理模块
+  - os操作系统信息
+- 第三方模块
+  - art-template
+- 自己写的模块
+- 加载规则以及加载机制
+- 循环加载
+
+## 什么是模块化
+
+- 文件作用域
+- 通信规则
+  - 加载require
+  - 导出
+
+在 Node 中没有全局作用域的概念
+
+- 在 Node 中，只能通过 require 方法来加载执行多个 JavaScript 脚本文件
+- require 加载只能是执行其中的代码，文件与文件之间由于是模块作用域，所以不会有污染的问题
+  - 模块完全是封闭的
+  - 外部无法访问内部
+  - 内部也无法访问外部
+- 模块作用域固然带来了一些好处，可以加载执行多个文件，可以完全避免变量命名冲突污染的问题
+- 但是某些情况下，模块与模块是需要进行通信的
+- 在每个模块中，都提供了一个对象：`exports`
+- 该对象默认是一个空对象
+- 你要做的就是把需要被外部访问使用的成员手动的挂载到 `exports` 接口对象中
+- 然后谁来 `require` 这个模块，谁就可以得到模块内部的 `exports` 接口对象
+- 还有其它的一些规则，具体后面讲，以及如何在项目中去使用这种编程方式，会通过后面的案例来处理
+
+## CommonJS模块规范
+
+在node中的javascript还有一个很重要的概念:模块系统.
+
+- 模块作用域
+- 使用require方法来加载模块
+- 使用exports接口对象用来导出模块中的成员
+
+### 加载require
+
+语法:
+
+```javascript
+var 自定义变量名称=require('模块')
+```
+
+两个作用:
+
+- 执行被加载模块中的代码
+- 得到被加载模块中的exports导出接口对象
+
+### 导出exports
+
+- node中模块作用域,默认文件中所有的成员只在当前文件模块有效
+- 对于希望可以被其它模块访问的成员,我们就需要把这些公开的成员都挂载到exports接口对象中就可以了
+
+导出多个成员(必须在对象中):
+
+```javascript
+exports.a=123
+exports.b='hello'
+exports.c=function(){
+	console.log('123')
+}
+
+```
+
+
+
+导出单个成员(拿到的就是:函数 字符串):
+
+```javascript
+module.exports='hello'
+```
+
+以下情况会覆盖:
+
+```javascript
+module.exports='hello'
+//以这个为准,后者会覆盖前者
+module.exports='123'
+```
+
+也可以这样导出多个成员
+
+```javascript
+module.exports={
+    a:"123",
+    b:'456'
+}
+```
+
+### 原理解析
+
+exports和module.exports的一个引用:
+
+```javascript
+console.log(exports===module.exports) //true
+
+exports.foo='bar'
+
+//等价于
+module.exports.foo='bar'
+```
+
+
+
+### exports 和 module.exports 的区别
+
+- 每个模块中都有一个 module 对象
+- module 对象中有一个 exports 对象
+- 我们可以把需要导出的成员都挂载到 module.exports 接口对象中
+- 也就是：`moudle.exports.xxx = xxx` 的方式
+- 但是每次都 `moudle.exports.xxx = xxx` 很麻烦，点儿的太多了
+- 所以 Node 为了你方便，同时在每一个模块中都提供了一个成员叫：`exports`
+- `exports === module.exports` 结果为  `true`s
+- 所以对于：`moudle.exports.xxx = xxx` 的方式 完全可以：`expots.xxx = xxx`
+- 当一个模块需要导出单个成员的时候，这个时候必须使用：`module.exports = xxx` 的方式
+- 不要使用 `exports = xxx` 不管用
+- 因为每个模块最终向外 `return` 的是 `module.exports`
+- 而 `exports` 只是 `module.exports` 的一个引用
+- 所以即便你为 `exports = xx` 重新赋值，也不会影响 `module.exports`
+- 但是有一种赋值方式比较特殊：`exports = module.exports` 这个用来重新建立引用关系的
+- 之所以让大家明白这个道理，是希望可以更灵活的去用它
+
+### require方法加载规则
+
+- 核心模块
+  
+  - 模块名
+  
+- 第三方模块
+  
+  - 模块名
+  
+- 用户自己写的
+  
+- 路径
+  
+- 优先从缓存加载
+
+  ```javascript
+  
+  // 优先从缓存加载
+  // 由于在a中已经加载过b
+  // 所以这里不会重复加载
+  // 可以拿到其中的接口对象,但是不会重复执行里面的代码
+  // 这样做的目的是为了避免重复加载,提高模块加载效率
+  ```
+
+  
+
+- 判断模块标识
+
+  - 核心模块
+
+  - 第三方模块
+
+  - 自定义模块
+
+    ```javascript
+    // 如果是非路径形式的模块标识
+    // 路径形式的模块: ./    ../  /xxx
+    require('./foo.js')
+    
+    // 核心模块 本质是文件 核心模块文件已经被编译到了二进制文件中了,我们只需要按照名字来加载就可以了
+    require('fs')
+    
+    // 第三方模块
+    // 凡是第三方模块都需要通过npm来下载
+    // 使用的时候就可以通过require（‘包名）的方式来进行加载才可以使用
+    // 不可能有任何一个第三方包和核心模块的名字是一样的
+    // 即不是核心模块,也不是路径形式的模块
+    //    先找到当前文件所处目录中的node_module目录
+    //     node_modules/art-template
+    //     node_modules/art-template/package.json文件
+    //     node_modules/art-template/package.json文件中的main属性
+    //      main属性中就记录了art-template的入口模块
+    //      然后加载使用这个第三方包,实际还是文件
+    
+    /**
+     * 如果package.json文件不存在或者main指定的入口模块也没有
+     * 则node会自动找该目录下的index.js
+     * 也就是说index.js会作为一个默认备选项
+     * 
+     * 如果以上所有任何一个条件都不成立,则会进入上一级目录中的node_modules
+     * ....
+     * 如果直到当前磁盘更目录还找不到,最后报错
+     *  can not  find module xxxxs
+     */
+    var template = require('art-template')
+    ```
+
+    
+
+## npm
+
+node package manager
+
+- npm init -y 初始化
+
+- npm install 
+
+  npm i
+
+- npm 包  --save
+
+  npm -S
+
+- npm --version 查找版本
+
+- npm install --global npm 升级npm
+
+- npm uninstall 
+
+  npm un
+
+  npm uninstall --save
+
+  npm un -S
+
+解决npm翻墙问题
+
+安装淘宝的cnpm
+
+```javascript
+npm install --global cnpm
+```
+
+接下来你安装包的时候把npm换成cnpm
+
+如果不想安装cnpm又想使用淘宝
+
+```javascript
+npm install xx --registry=https://registry.npm.taobao.org
+```
+
+但是每一次手动这样加参数很麻烦,所以可以设置
+
+```javascript
+npm config set registry https://registry.npm.taobao.org
+//查看npm配置信息
+npm config list
+```
+
+## express
+
+
 
 ## 服务端和客户端渲染
 
@@ -227,9 +467,48 @@ var http=require('http')
   + 模板引擎最早诞生于服务端，后来才发展到了前端
 - 服务端渲染和客户端渲染的区别
   + 客户端渲染不利于 SEO 搜索引擎优化
+  
   + 服务端渲染是可以被爬虫抓取到的，客户端异步渲染是很难被爬虫抓取到的
+  
   + 所以你会发现真正的网站既不是纯异步也不是纯服务端渲染出来的
+  
   + 而是两者结合来做的
+  
   + 例如京东的商品列表就采用的是服务端渲染，目的了为了 SEO 搜索引擎优化
+  
   + 而它的商品评论列表为了用户体验，而且也不需要 SEO 优化，所以采用是客户端渲染
+  
   + 页面右键可以查看源代码的就是服务端渲染
+  
+    最少两次请求，发起 ajax 在客户端使用模板引擎渲染
+  
+    客户端拿到的就是服务端已经渲染好的
+
+## 在 Node 中使用 art-template 模板引擎
+
++ 安装
++ 加载
++ template.render()
+
+## 如何在 Node 中实现服务器重定向
+
++ header('location')
+  * 301 永久重定向 浏览器会记住
+    - a.com b.com
+    - a 浏览器不会请求 a 了
+    - 直接去跳到 b 了
+  * 302 临时重定向 浏览器不记忆
+    - a.com b.com
+    - a.com 还会请求 a
+    - a 告诉浏览器你往 b
+
+## jQuery 的 each 和 原生的 JavaScript 方法 forEach
+
++ EcmaScript 5 提供的
+  * 不兼容 IE 8
++ jQuery 的 each 由 jQuery 这个第三方库提供
+  * jQuery 2 以下的版本是兼容 IE 8 的
+  * 它的 each 方法主要用来遍历 jQuery 实例对象（伪数组）
+  * 同时它也可以作为低版本浏览器中 forEach 替代品
+  * jQuery 的实例对象不能使用 forEach 方法，如果想要使用必须转为数组才可以使用
+  * `[].slice.call(jQuery实例对象)`
