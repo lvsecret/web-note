@@ -372,7 +372,7 @@ module.exports.foo='bar'
   - 自定义模块
 
     ```javascript
-    // 如果是非路径形式的模块标识
+    // 如果是非路径形式的模块标识  
     // 路径形式的模块: ./    ../  /xxx
     require('./foo.js')
     
@@ -458,9 +458,44 @@ npm config list
 
 ## express
 
+### 起步
+
+安装:
+
+```javascript
+npm i express --save
+```
+
+hell world:
+
+```javascript
+var express = require('express')
+
+var app = express()
+
+app.get('/', function (req, res) {
+  // res.write('123')
+  // res.end('hello')
+
+  res.send('jack')
+})
+app.get('/login', function (req, res) {
+  // res.write('123')
+  // res.end('hello')
+
+  res.send('jack')
+})
+
+app.listen(3000, function () {
+  console.log('Server is running...');
+})
+```
 
 
-## 服务端和客户端渲染
+
+## 其它
+
+### 服务端和客户端渲染
 
 - 服务端渲染
   + 说白了就是在服务端使用模板引擎
@@ -484,13 +519,13 @@ npm config list
   
     客户端拿到的就是服务端已经渲染好的
 
-## 在 Node 中使用 art-template 模板引擎
+### 在 Node 中使用 art-template 模板引擎
 
 + 安装
 + 加载
 + template.render()
 
-## 如何在 Node 中实现服务器重定向
+### 如何在 Node 中实现服务器重定向
 
 + header('location')
   * 301 永久重定向 浏览器会记住
@@ -502,7 +537,7 @@ npm config list
     - a.com 还会请求 a
     - a 告诉浏览器你往 b
 
-## jQuery 的 each 和 原生的 JavaScript 方法 forEach
+### jQuery 的 each 和 原生的 JavaScript 方法 forEach
 
 + EcmaScript 5 提供的
   * 不兼容 IE 8
@@ -512,3 +547,51 @@ npm config list
   * 同时它也可以作为低版本浏览器中 forEach 替代品
   * jQuery 的实例对象不能使用 forEach 方法，如果想要使用必须转为数组才可以使用
   * `[].slice.call(jQuery实例对象)`
+
+### 文件操作路径和模块路径
+
+```javascript
+var fs = require('fs')
+
+// 咱们所使用的所有文件操作的api都是异步的
+// 就像你的ajax请求一样
+
+//文件操作中的相对路径可以省略./
+
+/**
+ * 在文件操作的相对路径中
+ *   ./data/a.txt  相对于当前目录
+ *   data/a.txt    相对于当前目录
+ *   /data/a.txt    绝对路径,当前文件模块所处磁盘根目录
+ *   c:/xxx/xxx     绝对路径
+ */
+fs.readFile('data/read.txt', function (err, data) {
+  if (err) {
+    return console.log('读取失败');
+  }
+  console.log(data.toString());
+})
+// 模块不可以省略 ./
+require('./data/foo.js')('123')
+```
+
+### 修改完代码自动重启
+
+第三方工具 nodemon
+
+```javascript
+npm i --global nodemon
+```
+
+使用:
+
+```javascript
+node app.js
+//使用nodemon
+nodemon app.js
+```
+
+
+
+
+
