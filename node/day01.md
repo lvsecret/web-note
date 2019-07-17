@@ -460,13 +460,13 @@ npm config list
 
 ### 起步
 
-安装:
+#### 安装:
 
 ```javascript
 npm i express --save
 ```
 
-hell world:
+#### hell world:
 
 ```javascript
 var express = require('express')
@@ -488,6 +488,144 @@ app.get('/login', function (req, res) {
 
 app.listen(3000, function () {
   console.log('Server is running...');
+})
+```
+
+#### 基本路由:
+
+路由器:
+
+- 请求方式
+- 请求路径
+- 请求处理函数
+
+get:
+
+```javascript
+//当以get方式请求 / 的时候,执行对应的处理函数
+app.get('/',function(req,res){
+     console.log(req.query);//req.query是get获取数据使用
+    res.send('hellow')
+})
+```
+
+post:
+
+```javascript
+//当以post方式请求 / 的时候,执行对应的处理函数
+app.post('/',function(req,res){
+    res.send('post')
+})
+```
+
+静态服务:
+
+```javascript
+// 1.当以/public/开头的时候,去./public/目录中找找对应的资源 第一个参数就是别名 http://127.0.0.1:3000/public/login.html
+app.use('/public/', express.static('./public/'))
+
+// 2.当省略第一个参数的时候,访问的时候去掉/public/,直接写对应的资源 http://127.0.0.1:3000/login.html
+app.use(express.static('./public/'))
+
+app.use('static',express.static(path.join(__dirname,'public')))
+```
+
+### 在express中获取表单get请求参数
+
+在express中内置了一个api,可以直接通过req.query来获取
+
+```javascript
+req.query
+```
+
+### 在express获取表单post请求体数据
+
+在express中没有内置获取表单post请求体的api,这里我们需要使用一个第三方包:body-parser.
+
+安装:
+
+```shell
+npm install body-parser
+```
+
+配置:
+
+```javascript
+var express = require('express')
+// 0.引包
+var bodyParser = require('body-parser')
+
+var app = express()
+//配置body-parser
+//只要加入这个配置,则在req请求对象上会多出来一个属性:body
+//也就是说你就可以直接通过req.body来获取表单post请求体数据了
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
+
+```
+
+使用:
+
+```javascript
+app.use(function (req, res) {
+  res.setHeader('Content-Type', 'text/plain')
+  res.write('you posted:\n')
+    //可以通过req.body来获取表单psot请求数据
+  res.end(JSON.stringify(req.body, null, 2))
+})
+```
+
+
+
+### 在express中配置使用art-template
+
+[art-template的github仓库](https://github.com/aui/art-template)
+
+[art-templat官方文档](https://aui.github.io/art-template/)
+
+安装:
+
+```shell
+npm install --save art-template
+npm install --save express-art-template
+```
+
+配置:
+
+```javascript
+//配置使用art-template模块引擎
+// 第一个参数,表示,当渲染以.art结尾的文件的时候,使用art-template模版引擎
+// express-art-template 是专门用来在express中把art-template整合到express中
+//虽然外面这里不需要记载art-template但是也必须安装
+//原因就在于express-art-template 依赖了art-template
+
+// app.engine('art', require('express-art-template'));
+
+// 第一个参数该成html,以.html结尾的文件
+app.engine('html', require('express-art-template'));
+
+// express为response响应对象提供了一个方法:render
+//render方法默认是不可以使用,但是如果配置了模版引擎就可以使用了
+//res.render('html模板名',{模版数据})
+// 第一个参数不能写路径,默认会去项目中的views目录查找该模版文件
+// 也就是说express有一个约定：开发人员把所有的视图文件都放到views目录中
+
+// 如果想要修改默认的views目录,则可以
+// app.set('views',render函数的默认路径)
+```
+
+使用:
+
+```javascript
+app.get('/admin', function (req, res) {
+//express默认会去项目的views目录找index.html
+  res.render('admin/index.html', {
+    title: '管理系统'
+  })
 })
 ```
 
