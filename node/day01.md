@@ -545,7 +545,7 @@ req.query
 安装:
 
 ```shell
-npm install body-parser
+npm install body-parser -S
 ```
 
 配置:
@@ -627,6 +627,119 @@ app.get('/admin', function (req, res) {
     title: '管理系统'
   })
 })
+```
+
+### CRUD案例
+
+#### 起步
+
+\- 初始化
+
+-安装依赖
+
+\- 模板处理
+
+
+
+#### 路由设计
+
+| 请求方法 | 请求路径         | get 参数 | post 参数                  | 备注             |
+| -------- | ---------------- | -------- | -------------------------- | ---------------- |
+| GET      | /studens         |          |                            | 渲染首页         |
+| GET      | /students/new    |          |                            | 渲染添加学生页面 |
+| POST     | /studens/new     |          | name、age、gender、hobbies | 处理添加学生请求 |
+| GET      | /students/edit   | id       |                            | 渲染编辑页面     |
+| POST     | /students/edit   |          |                            | 处理编辑请求     |
+| GET      | /students/delete | id       | name、age、gender、hobbies | 处理删除请求     |
+
+
+
+#### 提取路由模块
+
+```javascript
+/**
+ *  router.js路由模块
+ *  职责:
+ *    处理路由
+ *    根据不同的请求方法+请求路径设置具体的请求处理函数
+ * 
+ */
+var express = require('express')
+// 1.创建一个路由容器
+var router = express.Router()
+// 2.把路由挂载到rouer路由容器中
+
+router.get('/students', function (req, res) {
+})
+
+router.get('/students/new', function (req, res) { 
+})
+
+router.post('/students/new', function (req, res) {
+})
+
+router.get('/students/edite', function (req, res) {
+    
+})
+
+router.post('/students/edite', function (req, res) {
+    
+})
+
+router.get('/students/delete', function (req, res) {
+    
+})
+
+
+
+// 3.把router导出
+module.exports = router
+```
+
+app.js
+
+```javascript
+var router = require('./router')
+// 把路由容器挂载到app服务汇总
+app.use(router)
+```
+
+
+
+#### 设计操作数据的api文件模块
+
+```javascript
+/**
+ * student.js
+ * 数据操作文件模块
+ * 职责:操作文件中的数据,只处理数据,不关心业务
+ * 
+ * 
+ */
+
+/**
+ * 获取所有学生列表
+ * return[]
+ */
+exports.find = function () {
+
+}
+/**
+ * 添加保存学生
+ */
+exports.save = function () {
+
+}
+/**
+ * 更新学生
+ */
+exports.update = function () {
+
+}
+/**
+ * 删除学生
+ */
+exports.delete = function () {}
 ```
 
 
@@ -729,7 +842,44 @@ node app.js
 nodemon app.js
 ```
 
+### 语法
+
+find
+
+```javascript
+ 	// es6中的一个数组方法:find
+    // 需要接收一个函数作为参数
+    // 当某个遍历项符合 item.id===student.id条件的时候,find会终止遍历,同时返回遍历项
+    var stu = students.find(function (item) {
+      return item.id === student.id
+    })
+```
 
 
 
+findIndex
+
+```javascript
+	// findIndex方法专门用来根据条件查找元素的下标
+    var deleteId = students.findIndex(function (item) {
+      return item.id === parseInt(id)
+    })
+    // 根据下标从数组中删除对应的学生对象
+    students.splice(deleteId, 1)
+```
+
+
+
+for in
+
+```javascript
+	// 这种方式你就写死了,有100个难道就写100次码?
+    // stu.name = student.name
+    // stu.age = student.age
+
+    //遍历拷贝对象
+    for (const key in student) {
+      stu[key] = student[key]
+    }
+```
 
