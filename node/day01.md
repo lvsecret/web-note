@@ -432,7 +432,7 @@ node package manager
 
   npm un -S
 
-解决npm翻墙问题
+#### 解决npm翻墙问题
 
 安装淘宝的cnpm
 
@@ -455,6 +455,25 @@ npm config set registry https://registry.npm.taobao.org
 //查看npm配置信息
 npm config list
 ```
+
+#### package-lock.json和package.json
+
+npm5以前没有package-lock.json
+
+当你安装包的时候,npm都会生成或者更新package-lock.json这个文件
+
+- npm5以后的版本安装包不需要加--save参数，它会自动保存依赖信息
+- package-lock.json这个文件会保存node_modules中所有包的信息(版本,下载地址)
+  - 这样的话重新npm install的时候速度就可以提升
+
+- 从文件看没有一个lock称之为锁
+  - 这个lock是锁版本的
+  - 如果项目依赖了1.1.1版本
+  - 如果你重新install其实会下载最新本版,而不是1.1.1
+  - 我们的目的是希望可以锁住1.1.1这个版本
+  - 所以这个package-lock.json这个文件的另一个作用就是锁定版本号,防止自动升级新版本
+
+
 
 ## express
 
@@ -742,7 +761,260 @@ exports.update = function () {
 exports.delete = function () {}
 ```
 
+## MongoDB
 
+#### 关系型数据库和非关系型数据库
+
+表就是关系
+
+或者说表与表之间存在关系.
+
+- 所有的关系型数据库都需要通过sql语言来操作
+- 所有的关系型数据库在操作之前都需要设计表结构
+- 而且数据表还支持约束
+  - 唯一的
+  - 主键
+  - 默认值
+  - 非空
+
+- 非关系型数据库非常灵活
+- 有的关系型数据库就是key-value对
+- 但是MongoDB是长的最像关系型数据的非关系型数据库
+  - 数据库->数据库
+  - 数据表->集合(数组)
+  - 表记录->文档对象
+
+- MongoDB不需要设计表结构
+- 也就是说你可以任意的往里面存数据,没有结构性这么一说
+
+#### 安装
+
+- 下载
+
+- 安装
+
+- 配置环境变量  C:\Program Files\MongoDB\Server\4.0\bin    在bin中                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+
+- 最后输入mongod --version 测试是否安装成功
+
+
+#### 启动和关闭数据库
+
+启动:
+
+```javascript
+//mongodb默认使用执行mongod命令所处盘符根目录下的/data/db作为自己的数据存储目录
+//所以在第一次执行改命令之前先自己手动新建一个/data/db
+mongod
+```
+
+如果想要修改默认的数据存储目录,可以:
+
+```
+mongod --dbpath=路径
+```
+
+停止:
+
+```javascript
+在开启服务的控制台,ctr+c或者直接关闭
+```
+
+#### 链接数据库
+
+```shell
+#默认链接本机
+mongo
+#退出
+exit
+```
+
+#### 基本命令
+
+- show dbs
+  - 查看显示所有数据库
+
+- db
+  - 查看当前操作的数据库
+- use 数据库名称
+  - 切换到指定的数据(如果没有就会新建)
+
+- 插入数据
+
+#### 在node中如何操作MongoDB数据
+
+##### 使用官方的mongodb包来操作
+
+https://github.com/mongodb/node-mongodb-native
+
+##### 使用第三方mongoose来操作MongoDB数据库
+
+第三方包:mongoose基于MongoDB官方的mongodb包再一次做了封装
+
+- 安装
+
+  ```javascript
+  npm i mongoose
+  ```
+
+- 起步
+
+  - ```javascript
+    const mongoose = require('mongoose');
+    
+    // 连接数据库
+    mongoose.connect('mongodb://localhost:27017/test', {
+      useNewUrlParser: true
+    });
+    // 创建一个模型 就是在设计数据库
+    //MongoDB 是动态的,非常灵活,只需要在代码中设计你的数据库就可以了
+    // mongoose这个包就可以让你的设计编写过程变得非常的简单
+    const Cat = mongoose.model('Cat', {
+      name: String
+    });
+    
+    // 实例化一个cat
+    const kitty = new Cat({
+      name: 'Zildjian'
+    });
+    // 持久化保存kitty实例
+    kitty.save().then(() => console.log('meow'));
+    ```
+
+- 官方指南
+
+  - 设计Schema发布model
+
+    ```javascript
+    const mongoose = require('mongoose')
+    
+    //表结构
+    const Schema = mongoose.Schema
+    // 1.链接数据库
+    mongoose.connect('mongodb://localhost/test')
+    
+    // 2.设计集合结构(表结构)
+    // 字段名称就是表结构中的属性名称
+    // 值
+    // 约束目的是为了保证数据的完整性,必要有脏数据
+    var userSchema = new Schema({
+      username: {
+        type: String,
+        required: true //必须有
+      },
+      password:{
+        type:String,
+        required:true
+      },
+      email:{
+        type:String
+      }
+    });
+    
+    // 3.将文档结构发布为模型  
+    //  mongoose.model 方法就是用来将一个架构发布为model
+    // 第一个参数:传入一个大写名词单数字符串用来表示你的数据库名称
+    //            mongoose会自动将大写名词的字符串生成 小写复数 的集合名称
+    //            User->users
+    // 第二个参数:架构Schema
+    // 返回值:模型构造函数
+    
+    var User=mongoose.model('User',userSchema)
+    
+    // 4.当我们有了模型构造函数之后,就可以使用这个构造函数对users集合中的数据为所欲为了
+    
+    ```
+
+  - 增加数据
+
+    ```javascript
+    var admin = new User({
+      username: 'admin',
+      password: '123',
+      email: 'admin@123.com'
+    
+    })
+    
+    admin.save(function (err, ret) {
+      if (err) {
+        console.log('fail');
+      } else {
+        console.log('ok');
+        console.log(ret);
+      }
+    })
+    ```
+
+    
+
+  - 查询数据
+
+    ```javascript
+    // 查所有
+    // User.find(function (err, ret) {
+    //   if (err) {
+    //     console.log('fail');
+    //   } else {
+    //     console.log(ret);
+    //   }
+    // })
+    // // 条件查询
+    // User.find({
+    //   username: 'zs'
+    // }, function (err, ret) {
+    //   if (err) {
+    //     console.log('fail');
+    //   } else {
+    //     console.log(ret);
+    //   }
+    // })
+    // 查询一个
+    User.findOne({
+      username: 'admin'
+    }, function (err, ret) {
+      if (err) {
+        console.log('fail');
+      } else {
+        console.log(ret);
+      }
+    })
+    ```
+
+    
+
+  - 删除数据
+
+    ```javascript
+    User.remove({
+      username: 'zs'
+    }, function (err, ret) {
+      if (err) {
+        console.log('fail');
+      } else {
+        console.log(ret);
+      }
+    
+    })
+    ```
+
+    
+
+  - 修改数据
+
+    ```javascript
+    User.findByIdAndUpdate('5d4159d561f2ad1564ba8aac', {
+      password: '8888'
+    }, function (err, ret) {
+      if (err) {
+        console.log('fail');
+      } else {
+        console.log('ok');
+        console.log(ret);
+      }
+    })
+    ```
+
+    
 
 ## 其它
 
@@ -841,6 +1113,89 @@ node app.js
 //使用nodemon
 nodemon app.js
 ```
+
+### 异步编程
+
+#### 回调函数
+
+1.不成立的情况
+
+```javascript
+function add(x, y) {
+  console.log(1)
+  setTimeout(function () {
+    console.log(2)
+    var ret = x + y
+    return ret
+  }, 0)
+  console.log(3)
+  // 到这里执行就结束了,不会等到前面的定时器,所以直接就返回了默认值undefined
+}
+console.log(add(1, 2))  
+//执行结果  1 3 undefined 2
+```
+
+2.不成立的情况
+
+```javascript
+function add(x, y) {
+  var ret
+  console.log(1)
+  setTimeout(function () {
+    console.log(2)
+    ret = x + y
+
+  }, 0)
+  console.log(3)
+  return ret
+}
+console.log(add(1, 2))
+//执行结果  1 3 undefined 2
+```
+
+3.回调函数
+
+```javascript
+function add(x, y, callback) {
+   //callback就是回调函数
+    //var x=10
+    //var y=20
+    //var callback=function(ret){console.log(ret)}
+  console.log(1)
+  setTimeout(function () {
+    var ret = x + y
+    callback(ret)
+
+  }, 1000)
+}
+add(10, 20, function (ret) {
+  console.log(ret)
+})
+// 注意:凡是需要得到一个函数内部异步操作的结果
+// setTimeout  readFile writeFire ajax
+// 这种情况必须通过:回调函数
+```
+
+基于原生XMLHTTPRequest封装get方法:
+
+[原生XMLHTTPRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest)
+
+```javascript
+ function get(url, callback) {
+        var oReq = new XMLHttpRequest();
+        // 当请求加载成功之后要调用指定的函数
+        oReq.onload = function() {
+          callback(oReq.responseText);
+        };
+        oReq.open('get', url, true);
+        oReq.send();
+  }
+  get('data.json', function(data) {
+        console.log(data);
+      });
+```
+
+
 
 ### 语法
 
