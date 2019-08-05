@@ -23,6 +23,7 @@ pReadFile('../data/read.txt').then(
   }
 ).then(function (data) {
   console.log(data);
+
   return pReadFile('../data/read.txt')
 }).then(
   function (data) {
