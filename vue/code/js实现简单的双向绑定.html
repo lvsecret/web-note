@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <input type="text" id="text" />
+      <p id="show"></p>
+    </div>
+  </body>
+  <script type="text/javascript">
+    // Object.defineProperty(obj, prop, descriptor)
+    /*
+      参数说明：
+      obj：必需。目标对象
+      prop：必需。需定义或修改的属性的名字
+      descriptor：必需。目标属性所拥有的特性
+      返回值：
+      传入函数的对象。即第一个参数obj
+      针对属性，我们可以给这个属性设置一些特性，比如是否只读不可以写；是否可以被for..in或Object.keys()遍历。
+
+      给对象的属性添加特性描述，目前提供两种形式：数据描述和存取器描述。
+  */
+    var obj = {};
+    Object.defineProperty(obj, "text", {
+      get: function () {
+        return obj;
+      },
+      set: function (newValue) {
+        document.getElementById("text").value = newValue;
+        document.getElementById("show").innerHTML = newValue;
+      },
+    });
+    document.addEventListener("keyup", function (e) {
+      obj.text = e.target.value;
+    });
+  </script>
+</html>
