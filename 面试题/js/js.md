@@ -1,14 +1,6 @@
-# 面试题
+# js
 
-## **1.图片过大网速慢用户上传失败怎么优化?**
-
-切片处理图片
-
-https://cloud.tencent.com/developer/article/1481294
-
-https://blog.csdn.net/qq_15238979/article/details/88779838
-
-## **2.深浅拷贝**
+## 1.深浅拷贝
 
 浅拷贝
 
@@ -106,7 +98,7 @@ var obj1 = {
     console.dir(obj2)
 ```
 
-### 3.异步编程
+### 2异步编程
 
 #### 回调函数
 
@@ -234,7 +226,7 @@ p1.then(function (data) {
 
 ![1564992985840](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\1564992985840.png)
 
-封装promise版本德readFile
+封装promise版本的readFile
 
 ```javascript
 var fs = require('fs')
@@ -268,5 +260,34 @@ pReadFile('../data/read.txt').then(
     console.log(data);
   }
 )
+```
+
+封装微信小程序请求
+
+```javascript
+/**
+ * 封装微信的的request
+ */
+function request(url, data = {}, method = "GET",header=1) {
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: url,
+      data: data,
+      method: method,
+      header: {
+        'Content-Type': header === 1 ? 'application/json' : 'application/x-www-form-urlencoded',
+        'token': 'app_access'
+      },
+      success: (res) => {
+        resolve(res.data)
+      },
+      fail: (err) => {
+        reject(err)
+        // console.log("failed")
+      }
+    })
+  });
+}
+
 ```
 
