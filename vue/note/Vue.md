@@ -1,6 +1,14 @@
 # Vue
 
-- **mvvm**
+- ### MVM与mvvm区别
+
+  mvc和mvvm其实区别并不大。都是一种设计思想。主要就是mvc中Controller演变成mvvm中的viewModel。
+  
+  mvvm主要解决了mvc中大量的DOM 操作使页面渲染性能降低，加载速度变慢，影响用户体验。
+  
+  和当 Model 频繁发生变化，开发者需要主动更新到View的问题 。
+  
+- ## mvvm
 
   MVVM 是 Model-View-ViewModel 的缩写。
   **Model**代表数据模型，也可以在Model中定义数据修改和操作的业务逻辑。
@@ -93,10 +101,197 @@
 - **组件间的参数传递**
 
   **1.父组件与子组件传值**
-  父组件传给子组件：子组件通过props方法接受数据;
-  子组件传给父组件：$emit方法传递参数
+  **父组件传给子组件**：通过props来进行父子组件之间的通信
+
+  1. 父组件中通过v-bind传参数
+  2. 子组件通过props接受参数
+
+  **子组件传给父组件**：通过自定义事件来进行父子组件之间的通信
+
+  1. 在父组件中写一个事件以及触发后的回调函数，并写好形参。
+
+  2. 在子组件中用原生事件触发一个回调函数，里面写成如下形式：$vm.emit('父组件中定义的xx事件', '要传的参数')
+
+     ```javascript
+     <!-- 子组件 -->
+     <template>
+         <div>
+             {{name}}
+             {{age}}
+             {{sex}}
+             {{arr[1]}}
+             <button @click = "showmsg">传值给父组件</button>
+         </div>
+     </template>
+     <script>
+     export default {
+         props:{
+             name: {
+                 type: String,
+                 default: function() {
+                     return 'hello'
+                 }
+             }, 
+             age: Number, 
+             sex: String,
+             arr: Array
+         },
+         data() {
+             return {
+     
+             }
+         },
+         methods: {
+             showmsg() {
+                 this.$emit('test', 'child')
+             }
+         }
+     }
+     </script>
+     <style lang="less">
+         
+     </style>
+     ```
+
+     ```javascript
+     <!-- 父组件 -->
+     <template>
+         <div>
+             this is parent
+             <child :name = "name" v-bind = "options" :arr = "testArr" @test="test"></child>
+         </div>
+     </template>
+     <script>
+         import child from './child'
+         export default {
+             name: 'parent',
+             components: {
+                 child
+             },
+             data() {
+                 return {
+                     name: 'wcx',
+                     options: {
+                         age: 12,
+                         sex: 'man'
+                     },
+                     testArr: [1,23,4]
+                 }
+             },
+             methods: {
+                 test(msg) {
+                     this.name = msg;
+                 }
+             }
+     
+         }
+     </script>
+     <style lang="less">
+     
+     </style>
+     ```
+
+     
+
   **2.非父子组件间的数据传递，兄弟组件传值**
   eventBus，就是创建一个事件中心，相当于中转站，可以用它来传递事件和接收事件。项目比较小时，用这个比较合适。（虽然也有不少人推荐直接用VUEX，具体来说看需求咯。技术只是手段，目的达到才是王道。）
+
+  通过vuex管理
+
+  1.安装vuex
+
+  2.Vue.use(vuex)
+
+  3.对 vuex中store进行实例化
+
+  4.在vue的实例中传入store
+
+  5.通过![vm.](https://math.jianshu.com/math?formula=vm.)store.commit('store中定义好的方法', '需要传的参数 ')改变参数
+
+  6.在需要传参的组件中通过computed和watch进行监听捕获需要的参数
+
+  ```javascript
+  //main.js 入口js
+  import Vue from 'vue'
+  import App from './App'
+  import router from './router'
+  import Vuex from 'vuex'
+  
+  Vue.config.productionTip = false;
+  
+  Vue.use(Vuex);//放在最前面
+  const store = new Vuex.Store({//创建store实例
+    state: {
+      param1: 0
+    },
+    mutations: {
+      f1(state, param) {
+        state.param1 = param;
+      }
+    }
+  })
+  
+  /* eslint-disable no-new */
+  new Vue({
+    el: '#app',
+    router,
+    store,//传入vue实例的内部
+    components: { App },
+    template: '<App/>'
+  })
+  ```
+
+  ```javascript
+  <!-- 需要传参的组件 -->
+  <template>
+      <div>
+          this is parent
+          {{param1}}
+          <button @click = "test">parentbtn</button>
+          <child></child>
+      </div>
+  </template>
+  <script>
+      import child from './child';
+      export default {
+          name: 'parent',
+          components: {
+              child
+          },
+          data() {
+              return {
+                  param1: this.$store.state.param1
+              }
+          },
+          methods: {
+              test() {
+                  this.$store.commit('f1', 1)
+              }
+          },
+          //利用computed监听vuex值的变化
+          computed: {
+              listenStore() {
+                  return this.$store.state.param1;
+              }
+          },
+          //利用watch监听computed中listenStore函数的变化并将新值赋给本组件中定义的变量
+          watch: {
+              listenStore: {
+                  handler(newValue, oldValue) {
+                      this.param1 = this.$store.state.param1;                
+                  },
+                  deep: true
+              }
+          }
+  
+      }
+  </script>
+  <style lang="less">
+  
+  </style>
+  ```
+
+  
 
 - **路由实现:hash history**
 
